@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biotech Tycoon</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh; margin: 0; padding: 20px; }
+        h1 { color: #4CAF50; }
+        .players-container { display: flex; flex-wrap: wrap; justify-content: flex-start; margin-top: 20px; width: 100%; }
+        .player { border: 1px solid #ddd; padding: 15px; margin: 10px; width: 200px; text-align: center; }
+        button { margin: 5px; padding: 5px 10px; cursor: pointer; }
+        input { width: 80px; padding: 5px; }
+        .card-draw {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .card-history {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+        .card-history h2 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .card-item {
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+            font-size: 16px;
+        }
+        .card-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Biotech Tycoon</h1>
+
+    <!-- Tela de Boas-Vindas -->
+    <div id="welcome-screen">
+        <h2>Bem-vindo ao Biotech Tycoon!</h2>
+        <p>Quantos jogadores irão jogar? (2 a 6)</p>
+        <input type="number" id="num-jogadores" min="2" max="6" placeholder="Número de Jogadores" />
+        <button onclick="startGame()">Iniciar Jogo</button>
+    </div>
+
+    <!-- Jogadores -->
+    <div class="players-container" id="players-container"></div>
+
+    <!-- Botão para puxar uma carta -->
+    <div class="card-draw" id="card-draw-container" style="display: none;">
+        <h2>Puxar uma Carta</h2>
+        <button onclick="puxarCarta()">Puxar Carta</button>
+        <p id="cartaSelecionada">Clique para puxar uma carta</p>
+    </div>
+
+    <!-- Histórico de Cartas -->
+    <div class="card-history" id="card-history" style="display: none;">
+        <h2>Histórico de Cartas</h2>
+        <div id="card-list"></div>
+    </div>
+
+    <script>
+        // Array com tópicos de biotecnologia e a indicação de aumento/diminuição nos custos
+        const temas = [
+        () => `As casas verdes receberam um aumento de 10%`,
+            () => `As casas vermelhas receberam um aumento de 10%`,
+            () => `As casas roxas receberam um aumento de 10%`,
+            () => `As casas rosas receberam um aumento de 10%`,
+            () => `As casas azuis receberam um aumento de 10%`,
+            () => `As casas violeta receberam um aumento de 10%`,
+            () => `As casas verde-água receberam um aumento de 10%`,
+            () => `As casas laranja receberam um aumento de 10%`,
+            () => `As casas amarelas receberam um aumento de 10%`,
+            () => `As casas pretas receberam um aumento de 10%`
+        ];
+
+        // Função para iniciar o jogo
+        function startGame() {
+            const numJogadores = parseInt(document.getElementById('num-jogadores').value);
+            const playersContainer = document.getElementById('players-container');
+            playersContainer.innerHTML = '';
+
+            if (isNaN(numJogadores) || numJogadores < 2 || numJogadores > 6) {
+                alert("Por favor, insira um número de jogadores entre 2 e 6.");
+                return;
+            }
+
+            // Esconde a tela de boas-vindas
+            document.getElementById('welcome-screen').style.display = 'none';
+
+            // Exibe o botão para puxar cartas
+            document.getElementById('card-draw-container').style.display = 'block';
+
+            // Inicializa os jogadores
+            for (let i = 1; i <= numJogadores; i++) {
+                const playerDiv = document.createElement('div');
+                playerDiv.classList.add('player');
+                playerDiv.innerHTML = `
+                    <h3>Jogador ${i}</h3>
+                    <p>Saldo: <span id="saldo${i}">30000</span></p>
+                    <input type="number" id="valor${i}" placeholder="Valor" />
+                    <button onclick="adicionar(${i})">Adicionar</button>
+                    <button onclick="subtrair(${i})">Subtrair</button>
+                `;
+                playersContainer.appendChild(playerDiv);
+            }
+        }
+
+        // Função para puxar uma carta
+        function puxarCarta() {
+            const indice = Math.floor(Math.random() * temas.length);
+            const carta = temas[indice]();
+
+            // Atualiza a carta selecionada na seção de histórico
+            const cardHistory = document.getElementById('card-history');
+            const cardList = document.getElementById('card-list');
+            const cardItem = document.createElement('div');
+            cardItem.className = 'card-item';
+            cardItem.textContent = carta;
+            cardList.appendChild(cardItem);
+
+            // Exibe o histórico se ainda estiver oculto
+            cardHistory.style.display = 'block';
+        }
+
+        // Funções de saldo para jogadores
+        function adicionar(jogador) {
+            const valorInput = document.getElementById(`valor${jogador}`).value;
+            if (valorInput === '') return;
+            const saldoElem = document.getElementById(`saldo${jogador}`);
+            let saldoAtual = parseInt(saldoElem.textContent);
+            saldoElem.textContent = saldoAtual + parseInt(valorInput);
+        }
+
+        function subtrair(jogador) {
+            const valorInput = document.getElementById(`valor${jogador}`).value;
+            if (valorInput === '') return;
+            const saldoElem = document.getElementById(`saldo${jogador}`);
+            let saldoAtual = parseInt(saldoElem.textContent);
+            saldoElem.textContent = saldoAtual - parseInt(valorInput);
+        }
+    </script>
+    <div>
+                                <img src="img/SORTE1.png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE2.png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(4).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(5).png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(6).png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(7).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(8).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(9).png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(10).png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(11).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(12).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(13).png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(14).png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(15).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(16).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(17).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(18).png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(19).png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(20).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(21).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(22).png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(23).png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(24).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(25).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(26).png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(27).png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(28).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(29).png" alt="carta" class="square-image">
+                            <select name="dono1" id="dono1">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(30).png" alt="carta" class="square-image">
+                            <select name="dono2" id="dono2">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+                            </select>
+                            <img src="img/SORTE(31).png" alt="carta" class="square-image">
+                            <select name="dono3" id="dono3">
+                                <option value="1">Dono 1</option>
+                                <option value="2">Dono 2</option>
+                                <option value="3">Dono 3</option>
+                                <option value="4">Dono 4</option>
+                                <option value="5">Dono 5</option>
+                                <option value="6">Dono 6</option>
+        </div>   
+</body>
+</html>
